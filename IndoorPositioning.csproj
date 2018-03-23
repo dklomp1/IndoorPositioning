@@ -215,6 +215,7 @@
     <Compile Include="Controllers\TrackersController.cs" />
     <Compile Include="IPSLogic\Classify.cs" />
     <Compile Include="IPSLogic\Filter.cs" />
+    <Compile Include="IPSLogic\KnnGenerate.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Address.cs" />
     <Compile Include="Models\Beacon.cs" />

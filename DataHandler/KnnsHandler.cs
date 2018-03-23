@@ -25,15 +25,15 @@ namespace IndoorPositioning.DataHandler
             return db.Knn;
         }
 
-        public byte[] PostTrainingSet(HttpPostedFileBase collection)
+        public byte[] PostTrainingSet(HttpPostedFile collection)
         {
-            Stream inputStream = Request.Files[0].InputStream;
+            Stream inputStream = collection.InputStream;
 
             //The reader reads the binary data from the file stream
             BinaryReader reader = new BinaryReader(inputStream);
-
             //Bytes from the binary reader stored in BlobValue array
             byte[] BlobValue = reader.ReadBytes((int)inputStream.Length);
+            string result = System.Text.Encoding.UTF8.GetString(BlobValue);
             return BlobValue;
         }
        
