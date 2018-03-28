@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Data;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.Http.Description;
 using IndoorPositioning.Models;
 
 namespace IndoorPositioning.DataHandler
 {
     public class BeaconsHandler
     {
-        private IndoorPositioningContext db = new IndoorPositioningContext();
-        
+
+        IndoorPositioningContext db;
+
+        public BeaconsHandler(IndoorPositioningContext db)
+        {
+            this.db = db;
+        }
         public int[] GetBeaconsFromStorey(Guid id)
         {
             var beacons = from b in db.Beacons where b.Storey.ID == id select b.ID;
@@ -23,7 +23,7 @@ namespace IndoorPositioning.DataHandler
         }
         public Guid GetBeaconStorey(int id)
         {
-            var StoreyID = db.Beacons.Find(id).Storey.ID;
+            Guid StoreyID = db.Beacons.Find(id).Storey.ID;
             return StoreyID;
         }
 

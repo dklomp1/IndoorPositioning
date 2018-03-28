@@ -16,17 +16,22 @@ namespace IndoorPositioning.IPSLogic
             Dictionary<List<string>, double[][]> processedTrainingSet = processTrainingSet(trainingSet);
             KeyValuePair<Dictionary<int, string>, KNearestNeighbors> labelMapKnn = KnnCreateWithLabelMap(processedTrainingSet);
             KeyValuePair<KeyValuePair<byte[], byte[]>, string> byteArrays = ConvertToByteArray(labelMapKnn);
+            //KVP<LabelMap, knnByte>,First label ID>
             return byteArrays;
         }
         public static Dictionary<List<string>, double[][]> processTrainingSet(string trainingSetArray)
         {
+            // Split the file trainingSet string
             string[] lines = trainingSetArray.Split(new string[] { "\r\n" }, StringSplitOptions.None);
             Dictionary<List<string>, double[][]> trainingSet = new Dictionary<List<string>, double[][]>();
             List<string> subStringList = new List<string>();
             double[][] subDoubleList = new double[lines.Length][];
             //Console.WriteLine("size trainingset: " + lines.Length);
+            //generate the trainingSet as dictionary
             for (int i = 0; i < lines.Length; i++)
             {
+                // line format == "roomName;firstRssi;secondRssi;ThirdRssi;" et cetera.
+                // every iteration retrieves the roomName and a double[] with the Rssi values
                 string[] stringList = lines[i].Split(';');
                 List<double> subSubDoubleList = new List<double>();
                 subStringList.Add(stringList[0]);
@@ -49,6 +54,9 @@ namespace IndoorPositioning.IPSLogic
             int labelCounter = -1;
             List<int> classesList = new List<int>();
             Dictionary<int, string> labelMap = new Dictionary<int, string>();
+            /* Since the kNN algorithm generates a model with int values instead of string values for the label, 
+            it is imperative to generate a map for reference.
+            */
             foreach (string label in trainingSet.First().Key.ToArray())
             {
                 if (!labelMap.ContainsValue(label))
@@ -56,7 +64,7 @@ namespace IndoorPositioning.IPSLogic
                     labelCounter++;
                     classesList.Add(labelCounter);
                     labelMap.Add(labelCounter, label);
-                    Console.WriteLine(labelCounter + ": " + label);
+                    //Console.WriteLine(labelCounter + ": " + label);
                 }
                 else
                 {
@@ -81,6 +89,7 @@ namespace IndoorPositioning.IPSLogic
         }
         public static KeyValuePair<KeyValuePair<byte[], byte[]>, string> ConvertToByteArray(KeyValuePair<Dictionary<int, string>, KNearestNeighbors> KV)
         {
+            // generate a temporary file to simulate the file construction
             using (var fs = new FileStream(@"C:\\Users\\dklomp1\\Pictures\\location test\\example.txt", FileMode.Create, FileAccess.ReadWrite))
             {
                 TextWriter tw = new StreamWriter(fs);
@@ -92,6 +101,7 @@ namespace IndoorPositioning.IPSLogic
                 }
                 tw.Flush();
                 fs.Close();
+                // read the temporary file and stream the content to a byte[]
                 FileStream stream = File.OpenRead(@"C:\\Users\\dklomp1\\Pictures\\location test\\example.txt");
                 byte[] LabelMap = new byte[stream.Length];
                 stream.Read(LabelMap, 0, LabelMap.Length);
@@ -103,6 +113,7 @@ namespace IndoorPositioning.IPSLogic
                 stream2.Read(knnByte, 0, knnByte.Length);
                 stream2.Close();
                 KeyValuePair<byte[], byte[]> sub = new KeyValuePair<byte[], byte[]>(knnByte, LabelMap);
+                //KVP<LabelMap, knnByte>,First label ID>
                 KeyValuePair<KeyValuePair<byte[], byte[]>,string> result = new KeyValuePair<KeyValuePair<byte[], byte[]>, string>(sub,labelMapDict.First().Value);
                 return result;
             }

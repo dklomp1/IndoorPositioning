@@ -9,7 +9,7 @@ namespace IndoorPositioning.Models
 {
     public class Space
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid ID { get; set; }
         [Required]
         public string Name { get; set; }

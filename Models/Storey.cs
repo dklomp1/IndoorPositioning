@@ -9,7 +9,7 @@ namespace IndoorPositioning.Models
 {
     public class Storey
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid ID { get; set; }
         [Required]
         public int Number { get; set; }

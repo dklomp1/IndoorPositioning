@@ -2,8 +2,8 @@
 using IndoorPositioning.DataHandler;
 using IndoorPositioning.IPSLogic;
 using IndoorPositioning.Models;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -11,14 +11,16 @@ using System.Web.Http.Description;
 
 namespace IndoorPositioning.Controllers
 {
+
     public class KnnsController : ApiController
     {
-        BeaconsHandler BC;
-        KnnsHandler KC;
+        IndoorPositioningContext db = new IndoorPositioningContext();
         [HttpPost]
         [ResponseType(typeof(Knn))]
         public async Task<IHttpActionResult> PostKnnTraining()
         {
+            StoreysHandler SH = new StoreysHandler(db);
+            KnnsHandler KH = new KnnsHandler(db);
             var provider = new MultipartMemoryStreamProvider();
             await Request.Content.ReadAsMultipartAsync(provider);
             var file = provider.Contents[0];
@@ -27,11 +29,27 @@ namespace IndoorPositioning.Controllers
             byte[] TrainingSet = file.ReadAsByteArrayAsync().Result; //reader.ReadBytes((int)file.Length);
 
             string trainingString = System.Text.Encoding.UTF8.GetString(TrainingSet);
+
+            //KVP<LabelMap, knnByte>,First label ID>
             KeyValuePair<KeyValuePair<byte[], byte[]>, string> LabelMapKnn = KnnGenerate.GenerateTemplate(trainingString);
             //Generate the files from the generate template method within the template method. save those 3 to db
             //Storey storey = BC.GetBeaconStorey(BeaconID);
             //Knn knn = new Knn();
-            return Ok(filename);
+
+            //Once trainingSets generated Guid's will be saved in the LabelMapKnn string.
+            Guid storeyId = Guid.Parse("d97813d4-6132-e811-ba7c-90cdb671d92a");
+            Storey storey = SH.StoreyFetch(storeyId);
+            byte[] LabelMap = LabelMapKnn.Key.Key;
+            byte[] Knn = LabelMapKnn.Key.Value;
+            Knn knn = new Knn(storey, TrainingSet, LabelMap, Knn);
+            KH.PostKnn(knn);
+            return Ok(storey);
         }
+        //[HttpGet]
+        //[ResponseType(typeof(Knn))]
+        ////public async Task<IHttpActionResult> GetClassification()
+        ////{
+        ////}
+
     }
 }

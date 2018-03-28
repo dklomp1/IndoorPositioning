@@ -16,25 +16,23 @@ using IndoorPositioning.Models;
 
 namespace IndoorPositioning.DataHandler
 {
-    public class KnnsHandler : Controller
+    public class KnnsHandler
     {
-        private IndoorPositioningContext db = new IndoorPositioningContext();
-        
-        public IQueryable<Knn> GetKnn()
+        IndoorPositioningContext db;
+
+        public KnnsHandler(IndoorPositioningContext db)
         {
-            return db.Knn;
+            this.db = db;
+        }
+        public Knn GetKnn(Guid StoreyID)
+        {
+            return db.Knn.Find(StoreyID);
         }
 
-        public byte[] PostTrainingSet(HttpPostedFile collection)
+        public void PostKnn(Knn knn)
         {
-            Stream inputStream = collection.InputStream;
-
-            //The reader reads the binary data from the file stream
-            BinaryReader reader = new BinaryReader(inputStream);
-            //Bytes from the binary reader stored in BlobValue array
-            byte[] BlobValue = reader.ReadBytes((int)inputStream.Length);
-            string result = System.Text.Encoding.UTF8.GetString(BlobValue);
-            return BlobValue;
+            db.Knn.Add(knn);
+            db.SaveChangesAsync();
         }
        
         private bool KnnExists(int id)
