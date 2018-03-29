@@ -49,39 +49,51 @@ namespace IndoorPositioning.Controllers
                 values.Add(sub);
             }
             Guid storeyID = BH.GetBeaconStorey(values[0].Key);
-            int length = BH.GetBeaconsFromStorey(storeyID).Length;
+            int[] allStoreys = BH.GetBeaconsFromStorey(storeyID);
 
-            List<List<double>> subCoordinates = getCoordinates(values, length);
-            foreach (List<double> subCoordinate in subCoordinates)
+            List<KeyValuePair<int, List<double>>> subCoordinates = getCoordinates(values, allStoreys);
+            foreach (KeyValuePair<int,List<double>> subCoordinate in subCoordinates)
             {
-                coordinates.Add(Filter.FilterTemplate(subCoordinate));
+                coordinates.Add(Filter.FilterTemplate(subCoordinate.Value));
             }
             Knn Knn = KH.GetKnn(storeyID);
             Classify.ClassifyTemplate(coordinates, Knn);
             return Ok(Classify.ClassifyTemplate(coordinates, Knn));
         }
         
-        public List<List<double>> getCoordinates(List<KeyValuePair<int, int>> values, int length)
+        public List<KeyValuePair<int,List<double>>> getCoordinates(List<KeyValuePair<int, int>> values, int[] allStoreys)
         {
-            List<List<double>> subCoordinates = new List<List<double>>();
-            for (int i = 0; i <= length; i++)
+            List<double> subCoordinates = new List<double>();
+            List<KeyValuePair<int, List<double>>> result = new List<KeyValuePair<int, List<double>>>();
+
+            for (int i = 0; i < allStoreys.Length; i++)
             {
-                int count = 0;
-                int refint = values[count].Key;
+                int refBeacon = allStoreys[i];
+                List<double> sub = new List<double>();
                 foreach (KeyValuePair<int, int> kv in values)
                 {
-                    if (kv.Key == refint)
+                    if (kv.Key == refBeacon)
                     {
-                        subCoordinates[i].Add(kv.Value);
+                        sub.Add(kv.Value);
                     }
                     else
                     {
-                        break;
+                        continue;
                     }
                 }
-                values.RemoveAll(x => x.Key == refint);
+                if (sub.Count != 0)
+                {
+                    KeyValuePair<int, List<double>> kvp = new KeyValuePair<int, List<double>>(refBeacon, sub);
+                    result.Add(kvp);
+                } else
+                {
+                    sub.Add(0);
+                    KeyValuePair<int, List<double>> kvp = new KeyValuePair<int, List<double>>(refBeacon, sub);
+                    result.Add(kvp);
+                }
+                //values.RemoveAll(x => x.Key == refint);
             }
-            return subCoordinates;
+            return result;
         }
     }
 }

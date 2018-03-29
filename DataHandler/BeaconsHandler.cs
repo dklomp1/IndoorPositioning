@@ -8,12 +8,11 @@ namespace IndoorPositioning.DataHandler
 {
     public class BeaconsHandler
     {
-
         IndoorPositioningContext db;
 
-        public BeaconsHandler(IndoorPositioningContext db)
+        public BeaconsHandler(IndoorPositioningContext dbcontext)
         {
-            this.db = db;
+            db = dbcontext;
         }
         public int[] GetBeaconsFromStorey(Guid id)
         {
@@ -23,7 +22,7 @@ namespace IndoorPositioning.DataHandler
         }
         public Guid GetBeaconStorey(int id)
         {
-            Guid StoreyID = db.Beacons.Find(id).Storey.ID;
+            var StoreyID = db.Beacons.Find(id).Storey.ID;
             return StoreyID;
         }
 

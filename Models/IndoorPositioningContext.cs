@@ -19,7 +19,7 @@ namespace IndoorPositioning.Models
         {
             //Database.Delete("IndoorPositioningContext");
             Database.SetInitializer(new MigrateDatabaseToLatestVersion<IndoorPositioningContext, Migrations.Configuration>());
-            Configuration.LazyLoadingEnabled = false;
+            //Configuration.LazyLoadingEnabled = false;
         }
 
         public System.Data.Entity.DbSet<IndoorPositioning.Models.Address> Addresses { get; set; }
