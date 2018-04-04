@@ -36,11 +36,11 @@ namespace IndoorPositioning.Controllers
             //Storey storey = BC.GetBeaconStorey(BeaconID);
             //Knn knn = new Knn();
 
-            //Once trainingSets generated Guid's will be saved in the LabelMapKnn string.
+            //Once trainingSets generated, Guid's will be saved in the LabelMapKnn string.
             Guid storeyId = Guid.Parse("d97813d4-6132-e811-ba7c-90cdb671d92a");
-            Storey storey = SH.StoreyFetch(storeyId);
-            byte[] LabelMap = LabelMapKnn.Key.Key;
-            byte[] Knn = LabelMapKnn.Key.Value;
+            Storey storey = SH.GetStorey(storeyId);
+            byte[] LabelMap = LabelMapKnn.Key.Value;
+            byte[] Knn = LabelMapKnn.Key.Key;
             Knn knn = new Knn(storey, TrainingSet, LabelMap, Knn);
             KH.PostKnn(knn);
             return Ok(storey);

@@ -1,18 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Web;
-using System.Web.Http;
-using System.Web.Http.Description;
-using System.Web.Mvc;
 using IndoorPositioning.Models;
+using Accord.MachineLearning;
 
 namespace IndoorPositioning.DataHandler
 {
@@ -26,7 +16,10 @@ namespace IndoorPositioning.DataHandler
         }
         public Knn GetKnn(Guid StoreyID)
         {
-            return db.Knn.Find(StoreyID);
+            var id = from b in db.Knn where b.Storey.ID == StoreyID select b.ID;
+            var knn = db.Knn.Find(id.First());
+            Knn result = new Knn(knn.Storey,knn.TrainingSet,knn.LabelMap,knn.kNN);
+            return result;
         }
 
         public void PostKnn(Knn knn)

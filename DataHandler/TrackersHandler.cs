@@ -15,51 +15,47 @@ namespace IndoorPositioning.DataHandler
 {
     public class TrackersHandler
     {
-        private IndoorPositioningContext db = new IndoorPositioningContext();
-        
-        public IQueryable<Tracker> GetTrackers()
+        IndoorPositioningContext db;
+
+        public TrackersHandler(IndoorPositioningContext db)
         {
-            return db.Trackers;
+            this.db = db;
         }
-        
         public Tracker GetTracker(int id)
         {
             Tracker tracker = db.Trackers.FindAsync(id).Result;
-            //if (tracker == null)
-            //{
-            //    return NotFound();
-            //}
 
             return tracker;
         }
-        public void PutTracker(int id, Tracker tracker)
-        {
+        //    public void PutTracker(int id, Tracker tracker)
+        //    {
 
-            db.Entry(tracker).State = EntityState.Modified;
-            
-        }
-        public void PostTracker(Tracker tracker)
-        {
+        //        db.Entry(tracker).State = EntityState.Modified;
 
-            db.Trackers.Add(tracker);
-            db.SaveChangesAsync();
-            
-        }
-        public void DeleteTracker(int id)
-        {
-            Tracker tracker = db.Trackers.FindAsync(id).Result;
-            if (tracker == null)
-            {
-               
-            }
+        //    }
+        //    public void PostTracker(Tracker tracker)
+        //    {
 
-            db.Trackers.Remove(tracker);
-            db.SaveChangesAsync();
-        }
+        //        db.Trackers.Add(tracker);
+        //        db.SaveChangesAsync();
 
-        private bool TrackerExists(int id)
-        {
-            return db.Trackers.Count(e => e.ID == id) > 0;
-        }
+        //    }
+        //    public void DeleteTracker(int id)
+        //    {
+        //        Tracker tracker = db.Trackers.FindAsync(id).Result;
+        //        if (tracker == null)
+        //        {
+
+        //        }
+
+        //        db.Trackers.Remove(tracker);
+        //        db.SaveChangesAsync();
+        //    }
+
+        //    private bool TrackerExists(int id)
+        //    {
+        //        return db.Trackers.Count(e => e.ID == id) > 0;
+        //    }
+        //}
     }
 }

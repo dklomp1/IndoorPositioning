@@ -3,8 +3,11 @@ using Accord.MachineLearning;
 using Accord.Statistics.Analysis;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using System.Web;
 
 namespace IndoorPositioning.IPSLogic
@@ -89,35 +92,23 @@ namespace IndoorPositioning.IPSLogic
         }
         public static KeyValuePair<KeyValuePair<byte[], byte[]>, string> ConvertToByteArray(KeyValuePair<Dictionary<int, string>, KNearestNeighbors> KV)
         {
-            // generate a temporary file to simulate the file construction
-            using (var fs = new FileStream(@"C:\\Users\\dklomp1\\Pictures\\location test\\example.txt", FileMode.Create, FileAccess.ReadWrite))
-            {
-                TextWriter tw = new StreamWriter(fs);
-                Dictionary<int, string> labelMapDict = new Dictionary<int, string>(KV.Key);
-                foreach (KeyValuePair<int, string> label in labelMapDict)
-                {
-                    string line = label.Key.ToString() + ";" + label.Value + Environment.NewLine;
-                    tw.WriteLine(line);
-                }
-                tw.Flush();
-                fs.Close();
-                // read the temporary file and stream the content to a byte[]
-                FileStream stream = File.OpenRead(@"C:\\Users\\dklomp1\\Pictures\\location test\\example.txt");
-                byte[] LabelMap = new byte[stream.Length];
-                stream.Read(LabelMap, 0, LabelMap.Length);
-                stream.Close();
-                KNearestNeighbors knn = KV.Value;
-                knn.Save(Path.Combine(@"C:\\Users\\dklomp1\\Pictures\\location test", "knn.bin"));
-                FileStream stream2 = File.OpenRead(@"C:\\Users\\dklomp1\\Pictures\\location test\\knn.bin");
-                byte[] knnByte = new byte[stream2.Length];
-                stream2.Read(knnByte, 0, knnByte.Length);
-                stream2.Close();
-                KeyValuePair<byte[], byte[]> sub = new KeyValuePair<byte[], byte[]>(knnByte, LabelMap);
-                //KVP<LabelMap, knnByte>,First label ID>
-                KeyValuePair<KeyValuePair<byte[], byte[]>,string> result = new KeyValuePair<KeyValuePair<byte[], byte[]>, string>(sub,labelMapDict.First().Value);
-                return result;
+            Dictionary<int, string> labelMapDict = new Dictionary<int, string>(KV.Key);
+            var binFormatter = new BinaryFormatter();
+            var mStream = new MemoryStream();
+            binFormatter.Serialize(mStream, labelMapDict);
+            mStream.Close();
+            //This gives you the byte array.
+            byte[] LabelMap = mStream.ToArray();
+
+            //kNN to byte[]
+            MemoryStream stream = new MemoryStream();
+            KV.Value.Save(stream);
+            
+            KeyValuePair<byte[], byte[]> sub = new KeyValuePair<byte[], byte[]>(stream.ToArray(), LabelMap);
+            //KVP<LabelMap, knnByte>,First label ID>
+            KeyValuePair<KeyValuePair<byte[], byte[]>,string> result = new KeyValuePair<KeyValuePair<byte[], byte[]>, string>(sub,labelMapDict.First().Value);
+            return result;
             }
             
         }
     }
-}

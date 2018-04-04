@@ -9,7 +9,12 @@ namespace IndoorPositioning.Models
 {
     public class Building
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Building(Guid id, string name)
+        {
+            this.ID = id;
+            this.Name = name;
+        }
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public Guid ID { get; set; }
         [Required]
         public string Name { get; set; }

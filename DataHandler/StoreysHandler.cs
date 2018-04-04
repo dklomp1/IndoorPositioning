@@ -21,13 +21,18 @@ namespace IndoorPositioning.DataHandler
             return db.Storeys;
         }
 
-        public Storey StoreyFetch(Guid id)
+        public Storey GetStorey(Guid id)
         {
             Storey storey = db.Storeys.Find(id);
             return storey;
         }
 
-       
+        public void PostStorey(Storey storey)
+        {
+            db.Storeys.Add(storey);
+            db.SaveChanges();
+        }
+
 
         //    // PUT: api/Storeys/5
         //    [ResponseType(typeof(void))]

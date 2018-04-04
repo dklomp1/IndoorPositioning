@@ -7,6 +7,8 @@ namespace IndoorPositioning.Models
 {
     public class Knn
     {
+        [Obsolete("Only needed for serialization and materialization", true)]
+        public Knn() { }
         public Knn(Storey Storey, byte[] TrainingSet, byte[] LabelMap, byte[] kNN)
         {
             this.Storey = Storey;
