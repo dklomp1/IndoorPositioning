@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Data.Entity;
+using System.Linq;
 using IndoorPositioning.Models;
 
 namespace IndoorPositioning.DataHandler
@@ -27,6 +29,24 @@ namespace IndoorPositioning.DataHandler
         {
             db.Buildings.Add(building);
             db.SaveChanges();
+        }
+
+        public bool PutBuilding(Building b)
+        {
+            if (db.Buildings.Find(b.ID) == null)
+            {
+                return false;
+            }
+            db.Entry(b).State = EntityState.Modified;
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (System.Data.Entity.Infrastructure.DbUpdateConcurrencyException)
+            {
+                throw;
+            }
+            return true;
         }
 
         //// PUT: api/Buildings/5

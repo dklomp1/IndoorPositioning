@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Web.Mvc;
 using IndoorPositioning.Models;
 
 namespace IndoorPositioning.DataHandler
@@ -33,41 +34,24 @@ namespace IndoorPositioning.DataHandler
             db.SaveChanges();
         }
 
-
-        //    // PUT: api/Storeys/5
-        //    [ResponseType(typeof(void))]
-        //    public async Task<IHttpActionResult> PutStorey(int id, Storey storey)
-        //    {
-        //        if (!ModelState.IsValid)
-        //        {
-        //            return BadRequest(ModelState);
-        //        }
-
-        //        //if (id != storey.ID)
-        //        //{
-        //        //    return BadRequest();
-        //        //}
-
-        //        db.Entry(storey).State = EntityState.Modified;
-
-        //        try
-        //        {
-        //            await db.SaveChangesAsync();
-        //        }
-        //        catch (DbUpdateConcurrencyException)
-        //        {
-        //            //if (!StoreyExists(id))
-        //            //{
-        //            //    return NotFound();
-        //            //}
-        //            //else
-        //            //{
-        //            //    throw;
-        //            //}
-        //        }
-
-        //        return StatusCode(HttpStatusCode.NoContent);
-        //    }
+        
+        public bool PutStorey(Storey storey)
+        {
+            if (db.Storeys.Find(storey.ID) == null)
+            {
+                return false;
+            }
+            db.Entry(storey).State = EntityState.Modified;
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (System.Data.Entity.Infrastructure.DbUpdateConcurrencyException)
+            {
+                 throw;
+            }
+            return true;
+        }
 
         //    // POST: api/Storeys
         //    [ResponseType(typeof(Storey))]
@@ -124,10 +108,9 @@ namespace IndoorPositioning.DataHandler
         //        base.Dispose(disposing);
         //    }
 
-        //    //private bool StoreyExists(int id)
-        //    //{
-        //    //    return db.Storeys.Count(e => e.ID == id) > 0;
-        //    //}
-        //}
+        private bool StoreyExists(Guid id)
+        {
+            return db.Storeys.Count(e => e.ID == id) > 0;
+        }
     }
 }

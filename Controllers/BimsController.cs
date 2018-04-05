@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
@@ -28,11 +29,11 @@ namespace IndoorPositioning.Controllers
             Models.Building b = new Models.Building(building.ID, building.Name);
             BH.PostBuilding(b);
             List<BuildingStorey> storeys = building.BuildingStoreys;
-            foreach(BuildingStorey storey in storeys)
+            foreach (BuildingStorey storey in storeys)
             {
                 Models.Storey st = new Models.Storey(storey.ID, storey.Name, b);
                 STH.PostStorey(st);
-                foreach(Space space in storey.Spaces)
+                foreach (Space space in storey.Spaces)
                 {
                     Models.Space s = new Models.Space(space.ID, space.Name, st);
                     SH.PostSpace(s);
@@ -40,6 +41,54 @@ namespace IndoorPositioning.Controllers
             }
             List<Space> spaces = storeys[0].Spaces;
             return Ok(building);
+        }
+
+        [HttpPost]
+        [ResponseType(typeof(string))]
+        public async Task<IHttpActionResult> PutBuilding()
+        {
+            BuildingsHandler SH = new BuildingsHandler(db);
+            List<Models.Building> BuildingList = JsonConvert.DeserializeObject<List<Models.Building>>(Request.Content.ReadAsStringAsync().Result);
+            foreach (Models.Building Building in BuildingList)
+            {
+                Models.Building b = new Models.Building(Building.ID, Building.Name);
+                if (!SH.PutBuilding(b))
+                {
+                    return Content(HttpStatusCode.Conflict, Building.ID.ToString());
+                }
+
+            }
+            return Ok();
+        }
+        public async Task<IHttpActionResult> PutStorey()
+        {
+            StoreysHandler SH = new StoreysHandler(db);
+            List<Models.Storey> StoreyList = JsonConvert.DeserializeObject<List<Models.Storey>>(Request.Content.ReadAsStringAsync().Result);
+            foreach (Models.Storey Storey in StoreyList)
+            {
+                Models.Storey s = new Models.Storey(Storey.ID, Storey.Name, Storey.Building);
+                if (!SH.PutStorey(s))
+                {
+                    return Content(HttpStatusCode.Conflict, Storey.ID.ToString());
+                }
+                
+            }
+            return Ok();
+        }
+        public async Task<IHttpActionResult> PutSpace()
+        {
+            SpacesHandler SH = new SpacesHandler(db);
+            List<Models.Space> SpaceList = JsonConvert.DeserializeObject<List<Models.Space>>(Request.Content.ReadAsStringAsync().Result);
+            foreach (Models.Space Space in SpaceList)
+            {
+                Models.Space s = new Models.Space(Space.ID, Space.Name, Space.Storey);
+                if (!SH.PutSpace(s))
+                {
+                    return Content(HttpStatusCode.Conflict, Space.ID.ToString());
+                }
+
+            }
+            return Ok();
         }
         private partial class Building
         {
@@ -51,12 +100,14 @@ namespace IndoorPositioning.Controllers
         {
             public Guid ID { get; set; }
             public string Name { get; set; }
-            public List<Space> Spaces { get; set; }
+            public Building Building { get; set; }
         }
         private partial class Space
         {
             public Guid ID { get; set; }
             public string Name { get; set; }
+
+            public Storey Storey { get; set; }
         }
     }
 }

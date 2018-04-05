@@ -1,5 +1,6 @@
 ﻿using IndoorPositioning.Models;
 using System;
+using System.Data.Entity;
 
 namespace IndoorPositioning.DataHandler
 {
@@ -24,6 +25,23 @@ namespace IndoorPositioning.DataHandler
             db.SaveChanges();
         }
 
+        public bool PutSpace(Space s)
+        {
+            if (db.Spaces.Find(s.ID) == null)
+            {
+                return false;
+            }
+            db.Entry(s).State = EntityState.Modified;
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (System.Data.Entity.Infrastructure.DbUpdateConcurrencyException)
+            {
+                throw;
+            }
+            return true;
+        }
         //    // PUT: api/Spaces/5
         //    [ResponseType(typeof(void))]
         //    public async Task<IHttpActionResult> PutSpace(int id, Space space)
