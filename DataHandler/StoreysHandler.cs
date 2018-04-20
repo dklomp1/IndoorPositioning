@@ -24,7 +24,7 @@ namespace IndoorPositioning.DataHandler
 
         public Storey GetStorey(Guid id)
         {
-            Storey storey = db.Storeys.Find(id);
+            var storey = db.Storeys.Find(id);
             return storey;
         }
 
@@ -35,12 +35,14 @@ namespace IndoorPositioning.DataHandler
         }
 
         
-        public bool PutStorey(Storey storey)
+        public bool PutStorey(Storey s)
         {
-            if (db.Storeys.Find(storey.ID) == null)
+            if (db.Storeys.Find(s.ID) == null)
             {
                 return false;
             }
+            Storey storey = db.Storeys.Find(s.ID);
+            storey.Name = s.Name;
             db.Entry(storey).State = EntityState.Modified;
             try
             {
@@ -49,6 +51,25 @@ namespace IndoorPositioning.DataHandler
             catch (System.Data.Entity.Infrastructure.DbUpdateConcurrencyException)
             {
                  throw;
+            }
+            return true;
+        }
+
+        public bool DeleteStorey(Storey storey)
+        {
+            foreach (Space space in db.Spaces.Where(x => x.Storey.ID == storey.ID))
+            {
+                SpacesHandler SH = new SpacesHandler(db);
+                SH.DeleteSpace(space);
+            }
+            db.Storeys.Remove(storey);
+            try
+            {
+                db.SaveChangesAsync();
+            }
+            catch (System.Data.Entity.Infrastructure.DbUpdateConcurrencyException)
+            {
+                throw;
             }
             return true;
         }

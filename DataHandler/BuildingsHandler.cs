@@ -33,14 +33,40 @@ namespace IndoorPositioning.DataHandler
 
         public bool PutBuilding(Building b)
         {
-            if (db.Buildings.Find(b.ID) == null)
+            Building building = db.Buildings.Find(b.ID);
+            if (building == null)
             {
                 return false;
             }
-            db.Entry(b).State = EntityState.Modified;
+            
+            building.Name = b.Name;
+            db.Entry(building).State = EntityState.Modified;
             try
             {
                 db.SaveChanges();
+            }
+            catch (System.Data.Entity.Infrastructure.DbUpdateConcurrencyException)
+            {
+                throw;
+            }
+            return true;
+        }
+        public bool DeleteBuilding(Guid b)
+        {
+            Building building = db.Buildings.Find(b);
+            if (building == null)
+            {
+                return false;
+            }
+            foreach (Storey storey in db.Storeys.Where(x => x.Building.ID == building.ID))
+            {
+                StoreysHandler SH = new StoreysHandler(db);
+                SH.DeleteStorey(storey);
+            }
+            db.Buildings.Remove(building);
+            try
+            {
+                db.SaveChangesAsync();
             }
             catch (System.Data.Entity.Infrastructure.DbUpdateConcurrencyException)
             {

@@ -9,17 +9,24 @@ namespace IndoorPositioning.Models
 {
     public class Space
     {
-        public Space(Guid id, string name, Storey storey)
+        public Space() { }
+        public Space(Guid id, string name)
+        {
+            this.ID = id;
+            this.Name = name;
+        }
+            public Space(Guid id, string name, Storey storey)
         {
             this.ID = id;
             this.Name = name;
             this.Storey = storey;
         }
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public Guid ID { get; set; }
         [Required]
         public string Name { get; set; }
         //Foreign Key        
+
         public virtual Storey Storey { get; set; }
 
     }

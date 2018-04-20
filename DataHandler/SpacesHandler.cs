@@ -1,6 +1,7 @@
 ﻿using IndoorPositioning.Models;
 using System;
 using System.Data.Entity;
+using System.Linq;
 
 namespace IndoorPositioning.DataHandler
 {
@@ -19,6 +20,12 @@ namespace IndoorPositioning.DataHandler
             var Space = db.Spaces.Find(id);
             return Space;
         }
+        public Storey GetSpaceStorey(Guid id)
+        {
+            var storey = db.Spaces.Find(id).Storey;
+            
+            return storey;
+        }
         public void PostSpace(Space space)
         {
             db.Spaces.Add(space);
@@ -31,7 +38,9 @@ namespace IndoorPositioning.DataHandler
             {
                 return false;
             }
-            db.Entry(s).State = EntityState.Modified;
+            Space Space = db.Spaces.Find(s.ID);
+            Space.Name = s.Name;
+            db.Entry(Space).State = EntityState.Modified;
             try
             {
                 db.SaveChanges();
@@ -42,6 +51,20 @@ namespace IndoorPositioning.DataHandler
             }
             return true;
         }
+        public bool DeleteSpace(Space s)
+        {
+            db.Spaces.Remove(s);
+            try
+            {
+                db.SaveChangesAsync();
+            }
+            catch (System.Data.Entity.Infrastructure.DbUpdateConcurrencyException)
+            {
+                throw;
+            }
+            return true;
+        }
+
         //    // PUT: api/Spaces/5
         //    [ResponseType(typeof(void))]
         //    public async Task<IHttpActionResult> PutSpace(int id, Space space)

@@ -9,13 +9,20 @@ namespace IndoorPositioning.Models
 {
     public class Storey
     {
-        public Storey(Guid id, string name, Building building)
+        public Storey() { }
+
+        public Storey(Guid id, string name)
+        {
+            this.ID = id;
+            this.Name = name;
+        }
+            public Storey(Guid id, string name, Building building)
         {
             this.ID = id;
             this.Name = name;
             this.Building = building;
         }
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public Guid ID { get; set; }
         [Required]
         public int Number { get; set; }

@@ -9,6 +9,7 @@ namespace IndoorPositioning.Models
 {
     public class Building
     {
+        public Building() { }
         public Building(Guid id, string name)
         {
             this.ID = id;

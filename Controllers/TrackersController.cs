@@ -79,25 +79,17 @@ namespace IndoorPositioning.Controllers
         {
             BeaconsHandler BH = new BeaconsHandler(db);
             List<double> coordinates = new List<double>();
+            Dictionary<string,int> locDict = JsonConvert.DeserializeObject<Dictionary<string, int>>(Request.Content.ReadAsStringAsync().Result);
             string[] resultSub = resultString.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-            int trackerID = new int();
-            List<string> resultList = new List<string>();
-            for (int i = 1; i < resultSub.Length - 1; i++)
-            {
-                if (i == 1)
-                {
-                    trackerID = int.Parse(resultSub[i].Trim().Trim('"').Split(':')[1].Trim(',').Trim('"'));
-                }
-                else
-                {
-                    resultList.Add(resultSub[i].Trim().Trim('"'));
-                }
-            }
+            int trackerID = locDict["ID"];
             List<KeyValuePair<int, int>> values = new List<KeyValuePair<int, int>>();
-            foreach (string r in resultList)
+            foreach (KeyValuePair<string,int> kv in locDict)
             {
-                KeyValuePair<int, int> sub = new KeyValuePair<int, int>(int.Parse(r.Split(':')[0].Remove(1, 1)), int.Parse(r.Split(':')[1].Remove(1, 1).Trim(',').Trim('"').Trim('\\')));
-                values.Add(sub);
+                if (!(kv.Key == "ID"))
+                {
+                    KeyValuePair<int, int> kvSub = new KeyValuePair<int, int>(int.Parse(kv.Key), kv.Value);
+                    values.Add(kvSub);
+                }
             }
             Guid storeyID = BH.GetBeaconStorey(values[0].Key);
             int[] allStoreys = BH.GetBeaconsFromStorey(storeyID);

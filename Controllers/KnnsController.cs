@@ -20,6 +20,7 @@ namespace IndoorPositioning.Controllers
         public async Task<IHttpActionResult> PostKnnTraining()
         {
             StoreysHandler SH = new StoreysHandler(db);
+            SpacesHandler SpH = new SpacesHandler(db);
             KnnsHandler KH = new KnnsHandler(db);
             var provider = new MultipartMemoryStreamProvider();
             await Request.Content.ReadAsMultipartAsync(provider);
@@ -36,8 +37,8 @@ namespace IndoorPositioning.Controllers
             //Storey storey = BC.GetBeaconStorey(BeaconID);
             //Knn knn = new Knn();
 
-            //Once trainingSets generated, Guid's will be saved in the LabelMapKnn string.
-            Guid storeyId = Guid.Parse("d97813d4-6132-e811-ba7c-90cdb671d92a");
+            //Once trainingSets generated, Space Guid will be saved in the LabelMapKnn string.
+            Guid storeyId = SpH.GetSpaceStorey(Guid.Parse(LabelMapKnn.Value)).ID;
             Storey storey = SH.GetStorey(storeyId);
             byte[] LabelMap = LabelMapKnn.Key.Value;
             byte[] Knn = LabelMapKnn.Key.Key;
