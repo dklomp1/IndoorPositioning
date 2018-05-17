@@ -13,6 +13,7 @@ using System.Web.Mvc;
 using System.Net.Http;
 using System.Net;
 using System.Text;
+using System.Linq;
 
 namespace IndoorPositioning.Controllers
 {
@@ -38,7 +39,7 @@ namespace IndoorPositioning.Controllers
             Stream stream = new MemoryStream(loc.Options);
             BinaryFormatter binfor = new BinaryFormatter();
             Options = (Dictionary<string,double>)binfor.Deserialize(stream);
-            List<Option> result = new List<Option>();
+            List<Option> options = new List<Option>();
             foreach(KeyValuePair<string,double> kv in Options)
             {
                 Space space = SH.GetSpace(Guid.Parse(kv.Key));
@@ -46,9 +47,27 @@ namespace IndoorPositioning.Controllers
                 Guid storeyID = space.Storey.ID;
                 Guid buildingID = space.Storey.Building.ID;
                 Option option = new Option(spaceID, storeyID, buildingID, kv.Value);
-                result.Add(option);
+                options.Add(option);
             }
+            KeyValuePair<DateTime, List<Option>> result = new KeyValuePair<DateTime, List<Option>>(loc.TimeStamp, options);
             return Json(result);
+        }
+        public async Task<IHttpActionResult> GetOrientation(int ID)
+        {
+            TrackerOrientationsHandler TOH = new TrackerOrientationsHandler(db);
+            TrackerOrientation TO = TOH.GetTrackerOrientation(ID);
+            KeyValuePair<DateTime, int> result = new KeyValuePair<DateTime, int>(TO.TimeStamp, TO.Orientation);
+            return Ok(result);
+        }
+        public async Task<IHttpActionResult> PutOrientation()
+        {
+            Heading newHeading = JsonConvert.DeserializeObject < Heading >(Request.Content.ReadAsStringAsync().Result);
+            TrackerOrientationsHandler TOH = new TrackerOrientationsHandler(db);
+            TrackersHandler TH = new TrackersHandler(db);
+            Tracker tracker = TH.GetTracker(newHeading.ID);
+            TrackerOrientation trackerOrientation = new TrackerOrientation(DateTime.Now, tracker, newHeading.Orientation);
+            TOH.PutOrientation(trackerOrientation);
+            return Ok();
         }
         public int[] BeaconsFromStorey(int id)
         {
@@ -61,6 +80,7 @@ namespace IndoorPositioning.Controllers
         [ResponseType(typeof(List<string>))]
         public async Task<IHttpActionResult> PostLocation()
         {
+            DateTime time = DateTime.Now;
             TrackersHandler TH = new TrackersHandler(db);
             TrackerLocationsHandler TLH = new TrackerLocationsHandler(db);
             SpacesHandler SH = new SpacesHandler(db);
@@ -70,7 +90,7 @@ namespace IndoorPositioning.Controllers
             Knn Knn = KH.GetKnn(coordinates.Value.Key);
             byte[] options = Classify.ClassifyTemplate(coordinates.Value.Value, Knn);
             Tracker tracker = TH.GetTracker(coordinates.Key);
-            TrackerLocation loc = new TrackerLocation(DateTime.Now,options,tracker);
+            TrackerLocation loc = new TrackerLocation(time,options,tracker);
             TLH.PostTrackerLocation(loc);
             return Ok(Classify.ClassifyTemplate(coordinates.Value.Value, Knn));
         }
@@ -79,22 +99,21 @@ namespace IndoorPositioning.Controllers
         {
             BeaconsHandler BH = new BeaconsHandler(db);
             List<double> coordinates = new List<double>();
-            Dictionary<string,int> locDict = JsonConvert.DeserializeObject<Dictionary<string, int>>(Request.Content.ReadAsStringAsync().Result);
-            string[] resultSub = resultString.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-            int trackerID = locDict["ID"];
-            List<KeyValuePair<int, int>> values = new List<KeyValuePair<int, int>>();
-            foreach (KeyValuePair<string,int> kv in locDict)
+            TrackerJson Json = JsonConvert.DeserializeObject<TrackerJson>(Request.Content.ReadAsStringAsync().Result);
+            List<string> data = Json.Data;
+            int trackerID = Json.ID;
+            List<KeyValuePair<string, string>> subValues = new List<KeyValuePair<string, string>>();
+            foreach (string kv in data)
             {
-                if (!(kv.Key == "ID"))
-                {
-                    KeyValuePair<int, int> kvSub = new KeyValuePair<int, int>(int.Parse(kv.Key), kv.Value);
-                    values.Add(kvSub);
-                }
+                string[] MacRssi = kv.Split(':');
+                KeyValuePair<string, string> kvSub = new KeyValuePair<string, string>(MacRssi[0], MacRssi[1]);
+                subValues.Add(kvSub);
             }
+            
+            List<KeyValuePair<int, int>> values = getValues(subValues);
             Guid storeyID = BH.GetBeaconStorey(values[0].Key);
-            int[] allStoreys = BH.GetBeaconsFromStorey(storeyID);
-
-            List<KeyValuePair<int, List<double>>> subCoordinates = getCoordinates(values, allStoreys);
+            int[] allStoreyBeacons = BH.GetBeaconsFromStorey(storeyID);
+            List<KeyValuePair<int, List<double>>> subCoordinates = getCoordinates(values, allStoreyBeacons);
             foreach (KeyValuePair<int, List<double>> subCoordinate in subCoordinates)
             {
                 coordinates.Add(IPSLogic.Filter.FilterTemplate(subCoordinate.Value));
@@ -103,15 +122,46 @@ namespace IndoorPositioning.Controllers
             KeyValuePair<int, KeyValuePair<Guid, List<double>>> result = new KeyValuePair<int, KeyValuePair<Guid, List<double>>>(trackerID,resultKV);
             return result;
         }
+        //hier verder "mac"(beaconid),"-087"(rssiint) naar int int
+        private List<KeyValuePair<int, int>> getValues(List<KeyValuePair<string, string>> subValues)
+        {
+            BeaconsHandler BH = new BeaconsHandler(db);
+            List<KeyValuePair<int, int>> values = new List<KeyValuePair<int, int>>();
+            foreach (KeyValuePair<string, string> kv in subValues)
+            {
+                int value;
+                IQueryable<int> ids = BH.GetIDFromMac(kv.Key);
+                if (ids.Count() > 0)
+                {
+                    int ID = ids.First();
+                    if(kv.Value[1] == '1')
+                    {
+                        value = int.Parse(kv.Value);
+                    }
+                    else
+                    {
+                        value = int.Parse(kv.Value.Remove(1, 1));
+                    }
+                    KeyValuePair<int, int> set = new KeyValuePair<int, int>(ID, value);
+                    values.Add(set);
+                }
+            }
+            return values;
+        }
 
-        public List<KeyValuePair<int,List<double>>> getCoordinates(List<KeyValuePair<int, int>> values, int[] allStoreys)
+        private partial class TrackerJson
+        {
+            public int ID { get; set; }
+            public List<string> Data { get; set; }
+        }
+        public List<KeyValuePair<int,List<double>>> getCoordinates(List<KeyValuePair<int, int>> values, int[] allStoreyBeacons)
         {
             List<double> subCoordinates = new List<double>();
             List<KeyValuePair<int, List<double>>> result = new List<KeyValuePair<int, List<double>>>();
 
-            for (int i = 0; i < allStoreys.Length; i++)
+            for (int i = 0; i < allStoreyBeacons.Length; i++)
             {
-                int refBeacon = allStoreys[i];
+                int refBeacon = allStoreyBeacons[i];
                 List<double> sub = new List<double>();
                 foreach (KeyValuePair<int, int> kv in values)
                 {
@@ -153,6 +203,16 @@ namespace IndoorPositioning.Controllers
             public Guid storeyID { get; set; }
             public Guid buildingID { get; set; }
             public double probability { get; set; }
+        }
+        private partial class Heading
+        {
+            public Heading(int ID, int Orientation)
+            {
+                this.ID = ID;
+                this.Orientation = Orientation;
+            }
+            public int ID { get; set; }
+            public int Orientation { get; set; }
         }
     }
 }

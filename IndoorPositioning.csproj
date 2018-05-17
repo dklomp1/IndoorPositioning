@@ -209,6 +209,7 @@
     <Compile Include="DataHandler\StoreyPlansHandler.cs" />
     <Compile Include="DataHandler\StoreysHandler.cs" />
     <Compile Include="DataHandler\TrackerLocationsHandler.cs" />
+    <Compile Include="DataHandler\TrackerOrientationsHandler.cs" />
     <Compile Include="DataHandler\TrackersHandler.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -228,6 +229,7 @@
     <Compile Include="Models\StoreyPlan.cs" />
     <Compile Include="Models\Tracker.cs" />
     <Compile Include="Models\TrackerLocation.cs" />
+    <Compile Include="Models\TrackerOrientation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

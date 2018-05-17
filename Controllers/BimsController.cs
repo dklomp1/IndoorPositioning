@@ -43,11 +43,11 @@ namespace IndoorPositioning.Controllers
         [ResponseType(typeof(string))]
         public async Task<IHttpActionResult> PutBuilding()
         {
-            BuildingsHandler SH = new BuildingsHandler(db);
+            BuildingsHandler BH = new BuildingsHandler(db);
             Models.Building Building = JsonConvert.DeserializeObject<Models.Building>(Request.Content.ReadAsStringAsync().Result);
             
             Models.Building b = new Models.Building(Building.ID, Building.Name);
-            if (!SH.PutBuilding(b))
+            if (!BH.PutBuilding(b))
             {
                 return Content(HttpStatusCode.Conflict, Building.ID.ToString());
             }
