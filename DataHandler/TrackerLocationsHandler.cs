@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using IndoorPositioning.Models;
 

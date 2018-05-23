@@ -10,6 +10,15 @@ namespace IndoorPositioning.IPSLogic
         //template method
         public static double FilterTemplate (List<double> values)
         {
+            if (values.Count == 1)
+            {
+                double result = Math.Round(values[0]);
+                if (result == 0)
+                {
+                    result = -100;
+                }
+                return result;
+            }
             double mean = Mean(values);
             double std = StandardDeviation(values, mean);
             List<double> filteredValues = correctedList(values, mean, std);
@@ -43,7 +52,10 @@ namespace IndoorPositioning.IPSLogic
         public static List<double> correctedList(List<double> values, double mean, double std)
         {
             List<double> result = new List<double>();
-
+            if(values.Count <=2)
+            {
+                return values;
+            }
             foreach (double i in values)
             {
                 //Console.WriteLine("std: " + std + ", mean: " + mean + ", value: " + i);

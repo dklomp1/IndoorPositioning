@@ -39,5 +39,7 @@ namespace IndoorPositioning.Models
         public System.Data.Entity.DbSet<IndoorPositioning.Models.TrackerLocation> TrackerLocations { get; set; }
 
         public System.Data.Entity.DbSet<IndoorPositioning.Models.TrackerOrientation> TrackerOrientations { get; set; }
+
+        public System.Data.Entity.DbSet<IndoorPositioning.Models.TrainingValue> TrainingValues { get; set; }
     }
 }

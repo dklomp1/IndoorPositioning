@@ -21,9 +21,14 @@ namespace IndoorPositioning.Controllers
             SpacesHandler SH = new SpacesHandler(db);
             StoreysHandler STH = new StoreysHandler(db);
             BuildingsHandler BH = new BuildingsHandler(db);
+            AddressesHandler AH = new AddressesHandler(db);
             Building building = JsonConvert.DeserializeObject<Building>(Request.Content.ReadAsStringAsync().Result);
             Models.Building b = new Models.Building(building.ID, building.Name);
             BH.PostBuilding(b);
+            double? longitude = building.Address.Longitude;
+            double? latitude = building.Address.Latitude;
+            Models.Address address = new Models.Address(building.Address.Street, building.Address.Number, building.Address.Town, building.Address.PostalCode, building.Address.Region, building.Address.Country, longitude, latitude, b);
+            AH.PostAddress(address);
             List<BuildingStorey> storeys = building.BuildingStoreys;
             foreach (BuildingStorey storey in storeys)
             {
@@ -45,7 +50,7 @@ namespace IndoorPositioning.Controllers
         {
             BuildingsHandler BH = new BuildingsHandler(db);
             Models.Building Building = JsonConvert.DeserializeObject<Models.Building>(Request.Content.ReadAsStringAsync().Result);
-            
+
             Models.Building b = new Models.Building(Building.ID, Building.Name);
             if (!BH.PutBuilding(b))
             {
@@ -65,7 +70,7 @@ namespace IndoorPositioning.Controllers
                 {
                     return Content(HttpStatusCode.Conflict, Storey.ID.ToString());
                 }
-                
+
             }
             return Ok();
         }
@@ -86,25 +91,32 @@ namespace IndoorPositioning.Controllers
             return Ok();
         }
         [HttpDelete]
-        public async Task<IHttpActionResult> DeleteBuilding(Guid id)
+        public async Task<IHttpActionResult> DeleteBuilding(string ID)
         {
+            bool succes = Guid.TryParse(ID, out Guid id);
             BuildingsHandler BH = new BuildingsHandler(db);
-            if (!BH.DeleteBuilding(id))
+            if (!BH.DeleteBuilding(id).Result)
             {
                 return Content(HttpStatusCode.Conflict, id.ToString());
             }
             return Ok();
         }
-        private partial class Address
-        {
-            public Guid ID { get; set; }
-            public Building building { get; set; }
+        private partial class Address{
+            public string Street { get; set; }
+            public string Number { get; set; }
+            public string Town { get; set; }
+            public string PostalCode { get; set; }
+            public string Region { get; set; }
+            public string Country { get; set; }
+            public double? Longitude { get; set; }
+            public double? Latitude { get; set; }
         }
         private partial class Building
         {
             public Guid ID { get; set; }
             public string Name { get; set; }
             public List<BuildingStorey> BuildingStoreys { get; set; }
+            public Address Address { get; set; }
         }
         private partial class BuildingStorey
         {

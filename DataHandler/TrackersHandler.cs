@@ -27,6 +27,41 @@ namespace IndoorPositioning.DataHandler
 
             return tracker;
         }
+
+        public void SetStatus(int ID, Space space, string status)
+        {
+            Tracker tracker = GetTracker(ID);
+            tracker.trainingLocation = space;
+            tracker.Status = status;
+            db.Entry(tracker).State = EntityState.Modified;
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw;
+            }
+        }
+        public async Task<bool> setTrainingLocationNull(Space space)
+        {
+            var trackers = db.Trackers.Where(x => x.trainingLocation.ID == space.ID);
+
+            if (trackers.Count()>0)
+            {
+                foreach (Tracker tracker in trackers)
+                {
+                    tracker.trainingLocation = null;
+                    db.Entry(tracker).State = EntityState.Modified;
+                }
+            }
+            return true;
+        }
+        public string GetStatus(int id)
+        {
+            Tracker tracker = GetTracker(id);
+            return tracker.Status;
+        }
         //    public void PutTracker(int id, Tracker tracker)
         //    {
 

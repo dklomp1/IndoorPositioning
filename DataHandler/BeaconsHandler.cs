@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Data;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Threading.Tasks;
 using IndoorPositioning.Models;
 
 namespace IndoorPositioning.DataHandler
@@ -18,6 +21,19 @@ namespace IndoorPositioning.DataHandler
             var beacons = from b in db.Beacons where b.Storey.ID == id select b.ID;
             
             return beacons.ToList().ToArray();
+        }
+        public async Task<bool> setStoreyNull(Storey storey)
+        {
+            var beacons = from b in db.Beacons where b.Storey.ID == storey.ID select b;
+            if (beacons.Any())
+            {
+                foreach (Beacon beacon in beacons)
+                {
+                    beacon.Storey = null;
+                    db.Entry(beacon).State = EntityState.Modified;
+                }
+            }
+            return true;
         }
         public Guid GetBeaconStorey(int id)
         {

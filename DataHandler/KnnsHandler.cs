@@ -3,6 +3,9 @@ using System.Data;
 using System.Linq;
 using IndoorPositioning.Models;
 using Accord.MachineLearning;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Threading.Tasks;
 
 namespace IndoorPositioning.DataHandler
 {
@@ -31,6 +34,19 @@ namespace IndoorPositioning.DataHandler
         private bool KnnExists(int id)
         {
             return db.Knn.Count(e => e.ID == id) > 0;
+        }
+        public async Task<bool> setStoreyNull(Storey storey)
+        {
+            var knns = db.Knn.Where(x => x.Storey.ID == storey.ID);
+            if (knns.Any())
+            {
+                foreach (Knn knn in knns)
+                {
+                    knn.Storey = null;
+                    db.Entry(knn).State = EntityState.Modified;
+                }
+            }
+            return true;
         }
     }
 }

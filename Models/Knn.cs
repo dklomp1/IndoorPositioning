@@ -16,6 +16,12 @@ namespace IndoorPositioning.Models
             this.LabelMap = LabelMap;
             this.kNN = kNN;
         }
+        public Knn(Storey Storey, byte[] LabelMap, byte[] kNN)
+        {
+            this.Storey = Storey;
+            this.LabelMap = LabelMap;
+            this.kNN = kNN;
+        }
         public int ID { get; set; }
         public virtual Storey Storey { get; set; }
         public byte[] TrainingSet { get; set; }

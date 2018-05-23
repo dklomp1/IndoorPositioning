@@ -200,6 +200,7 @@
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\BimsController.cs" />
     <Compile Include="Controllers\KnnsController.cs" />
+    <Compile Include="Controllers\TrainingController.cs" />
     <Compile Include="DataHandler\AddressesHandler.cs" />
     <Compile Include="DataHandler\BeaconsHandler.cs" />
     <Compile Include="DataHandler\BuildingsHandler.cs" />
@@ -211,6 +212,7 @@
     <Compile Include="DataHandler\TrackerLocationsHandler.cs" />
     <Compile Include="DataHandler\TrackerOrientationsHandler.cs" />
     <Compile Include="DataHandler\TrackersHandler.cs" />
+    <Compile Include="DataHandler\TrainingValuesHandler.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -218,6 +220,7 @@
     <Compile Include="IPSLogic\Classify.cs" />
     <Compile Include="IPSLogic\Filter.cs" />
     <Compile Include="IPSLogic\KnnGenerate.cs" />
+    <Compile Include="IPSLogic\Parsers.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Address.cs" />
     <Compile Include="Models\Beacon.cs" />
@@ -230,6 +233,7 @@
     <Compile Include="Models\Tracker.cs" />
     <Compile Include="Models\TrackerLocation.cs" />
     <Compile Include="Models\TrackerOrientation.cs" />
+    <Compile Include="Models\TrainingValue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -318,7 +322,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>63246</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:63246/</IISUrl>
+          <IISUrl>http://localhost:3000/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

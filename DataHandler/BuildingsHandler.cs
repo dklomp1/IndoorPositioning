@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Data.Entity;
+using System.Data.Entity.Validation;
 using System.Linq;
+using System.Threading.Tasks;
 using IndoorPositioning.Models;
 
 namespace IndoorPositioning.DataHandler
@@ -51,22 +53,25 @@ namespace IndoorPositioning.DataHandler
             }
             return true;
         }
-        public bool DeleteBuilding(Guid b)
+        public async Task<bool> DeleteBuilding(Guid b)
         {
             Building building = db.Buildings.Find(b);
             if (building == null)
             {
                 return false;
             }
-            foreach (Storey storey in db.Storeys.Where(x => x.Building.ID == building.ID))
+            var storeys = db.Storeys.Where(x => x.Building.ID == building.ID);
+            foreach (Storey storey in storeys)
             {
                 StoreysHandler SH = new StoreysHandler(db);
-                SH.DeleteStorey(storey);
+                await SH.DeleteStorey(storey);
             }
-            db.Buildings.Remove(building);
+            AddressesHandler AH = new AddressesHandler(db);
+            await AH.DeleteAddress(b);
+            db.Entry(building).State = EntityState.Deleted;
             try
             {
-                db.SaveChangesAsync();
+                db.SaveChanges();
             }
             catch (System.Data.Entity.Infrastructure.DbUpdateConcurrencyException)
             {

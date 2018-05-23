@@ -10,17 +10,15 @@ namespace IndoorPositioning.Models
     public class Building
     {
         public Building() { }
-        public Building(Guid id, string name)
+        public Building(Guid ID, string Name)
         {
-            this.ID = id;
-            this.Name = name;
+            this.ID = ID;
+            this.Name = Name;
         }
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public Guid ID { get; set; }
         [Required]
+        public Guid ID { get; set; }
         public string Name { get; set; }
-        //Foreign Key
-        public virtual Address Address { get; set; }
 
     }
 }

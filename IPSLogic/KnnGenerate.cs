@@ -1,6 +1,7 @@
 ﻿using Accord.IO;
 using Accord.MachineLearning;
 using Accord.Statistics.Analysis;
+using IndoorPositioning.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
@@ -14,9 +15,17 @@ namespace IndoorPositioning.IPSLogic
 {
     public class KnnGenerate
     {
-        public static KeyValuePair<KeyValuePair<byte[], byte[]>, string> GenerateTemplate(string trainingSet)
+        public static KeyValuePair<KeyValuePair<byte[], byte[]>, string> GenerateTemplateTrainingFile(string trainingSet)
         {
             Dictionary<List<string>, double[][]> processedTrainingSet = processTrainingSet(trainingSet);
+            KeyValuePair<Dictionary<int, string>, KNearestNeighbors> labelMapKnn = KnnCreateWithLabelMap(processedTrainingSet);
+            KeyValuePair<KeyValuePair<byte[], byte[]>, string> byteArrays = ConvertToByteArray(labelMapKnn);
+            //KVP<LabelMap, knnByte>,First label ID>
+            return byteArrays;
+        }
+        public static KeyValuePair<KeyValuePair<byte[], byte[]>, string> GenerateTemplateTrainingValues(IQueryable<TrainingValue> trainingValues)
+        {
+            Dictionary<List<string>, double[][]> processedTrainingSet = processTrainingValues(trainingValues);
             KeyValuePair<Dictionary<int, string>, KNearestNeighbors> labelMapKnn = KnnCreateWithLabelMap(processedTrainingSet);
             KeyValuePair<KeyValuePair<byte[], byte[]>, string> byteArrays = ConvertToByteArray(labelMapKnn);
             //KVP<LabelMap, knnByte>,First label ID>
@@ -48,6 +57,37 @@ namespace IndoorPositioning.IPSLogic
                     catch { }
                 }
                 subDoubleList[i] = subSubDoubleList.ToArray();
+            }
+            trainingSet.Add(subStringList, subDoubleList);
+            return trainingSet;
+        }
+        public static Dictionary<List<string>, double[][]> processTrainingValues(IQueryable<TrainingValue> trainingValues)
+        {
+
+            Dictionary<List<string>, double[][]> trainingSet = new Dictionary<List<string>, double[][]>();
+            List<string> subStringList = new List<string>();
+            double[][] subDoubleList = new double[trainingValues.Count()][];
+            int i = 0;
+            //generate the trainingSet as dictionary
+            foreach (TrainingValue tv in trainingValues)
+            {
+                // tv format == "Guid Space_ID, stValues" et cetera.
+                // every iteration retrieves the roomName and a double[] with the Rssi values
+                
+                List<double> subSubDoubleList = new List<double>();
+                subStringList.Add(tv.Space.ID.ToString());
+                string[] values = tv.Values.Split(',');
+                foreach (string value in values)
+                {
+                    try
+                    {
+                        subSubDoubleList.Add(double.Parse(value) * -1);
+                        Console.WriteLine(double.Parse(value) * -1);
+                    }
+                    catch { }
+                }
+                subDoubleList[i] = subSubDoubleList.ToArray();
+                i++;
             }
             trainingSet.Add(subStringList, subDoubleList);
             return trainingSet;

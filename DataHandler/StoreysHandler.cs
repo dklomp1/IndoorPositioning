@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using IndoorPositioning.Models;
 
@@ -55,22 +56,19 @@ namespace IndoorPositioning.DataHandler
             return true;
         }
 
-        public bool DeleteStorey(Storey storey)
+        public async Task<bool> DeleteStorey(Storey storey)
         {
-            foreach (Space space in db.Spaces.Where(x => x.Storey.ID == storey.ID))
+            var spaces = db.Spaces.Where(x => x.Storey.ID == storey.ID);
+            foreach (Space space in spaces)
             {
                 SpacesHandler SH = new SpacesHandler(db);
-                SH.DeleteSpace(space);
+                await SH.DeleteSpace(space);
             }
-            db.Storeys.Remove(storey);
-            try
-            {
-                db.SaveChangesAsync();
-            }
-            catch (System.Data.Entity.Infrastructure.DbUpdateConcurrencyException)
-            {
-                throw;
-            }
+            BeaconsHandler BH = new BeaconsHandler(db);
+            await BH.setStoreyNull(storey);
+            KnnsHandler KH = new KnnsHandler(db);
+            await KH.setStoreyNull(storey);
+            db.Entry(storey).State = EntityState.Deleted;
             return true;
         }
 

@@ -2,6 +2,7 @@
 using System;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace IndoorPositioning.DataHandler
 {
@@ -51,17 +52,13 @@ namespace IndoorPositioning.DataHandler
             }
             return true;
         }
-        public bool DeleteSpace(Space s)
+        public async Task<bool> DeleteSpace(Space s)
         {
-            db.Spaces.Remove(s);
-            try
-            {
-                db.SaveChangesAsync();
-            }
-            catch (System.Data.Entity.Infrastructure.DbUpdateConcurrencyException)
-            {
-                throw;
-            }
+            TrackersHandler TH = new TrackersHandler(db);
+            await TH.setTrainingLocationNull(s);
+            TrainingValuesHandler TVH = new TrainingValuesHandler(db);
+            await TVH.DeleteTrainingValues(s);
+            db.Entry(s).State = EntityState.Deleted;
             return true;
         }
 

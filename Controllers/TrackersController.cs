@@ -9,10 +9,6 @@ using IndoorPositioning.IPSLogic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Newtonsoft.Json;
-using System.Web.Mvc;
-using System.Net.Http;
-using System.Net;
-using System.Text;
 using System.Linq;
 
 namespace IndoorPositioning.Controllers
@@ -52,6 +48,19 @@ namespace IndoorPositioning.Controllers
             KeyValuePair<DateTime, List<Option>> result = new KeyValuePair<DateTime, List<Option>>(loc.TimeStamp, options);
             return Json(result);
         }
+        public async Task<IHttpActionResult> GetStatus(int id)
+        {
+            TrackersHandler TH = new TrackersHandler(db);
+            return Ok(TH.GetStatus(id));
+        }
+        public async Task<IHttpActionResult> PutStatus()
+        {
+            TrackerTraining newStatus = JsonConvert.DeserializeObject<TrackerTraining>(Request.Content.ReadAsStringAsync().Result);
+            TrackersHandler TH = new TrackersHandler(db);
+            SpacesHandler SH = new SpacesHandler(db);
+            TH.SetStatus(newStatus.ID, SH.GetSpace(newStatus.SpaceID), newStatus.Status);
+            return Ok();
+        }
         public async Task<IHttpActionResult> GetOrientation(int ID)
         {
             TrackerOrientationsHandler TOH = new TrackerOrientationsHandler(db);
@@ -69,6 +78,8 @@ namespace IndoorPositioning.Controllers
             TOH.PutOrientation(trackerOrientation);
             return Ok();
         }
+
+        
         public int[] BeaconsFromStorey(int id)
         {
             BeaconsHandler BC = new BeaconsHandler(db);
@@ -99,7 +110,7 @@ namespace IndoorPositioning.Controllers
         {
             BeaconsHandler BH = new BeaconsHandler(db);
             List<double> coordinates = new List<double>();
-            TrackerJson Json = JsonConvert.DeserializeObject<TrackerJson>(Request.Content.ReadAsStringAsync().Result);
+            TrackerJson Json = JsonConvert.DeserializeObject<TrackerJson>(resultString);
             List<string> data = Json.Data;
             int trackerID = Json.ID;
             List<KeyValuePair<string, string>> subValues = new List<KeyValuePair<string, string>>();
@@ -116,13 +127,12 @@ namespace IndoorPositioning.Controllers
             List<KeyValuePair<int, List<double>>> subCoordinates = getCoordinates(values, allStoreyBeacons);
             foreach (KeyValuePair<int, List<double>> subCoordinate in subCoordinates)
             {
-                coordinates.Add(IPSLogic.Filter.FilterTemplate(subCoordinate.Value));
+                coordinates.Add(Filter.FilterTemplate(subCoordinate.Value));
             }
             KeyValuePair<Guid, List<double>> resultKV = new KeyValuePair<Guid, List<double>>(storeyID,coordinates);
             KeyValuePair<int, KeyValuePair<Guid, List<double>>> result = new KeyValuePair<int, KeyValuePair<Guid, List<double>>>(trackerID,resultKV);
             return result;
         }
-        //hier verder "mac"(beaconid),"-087"(rssiint) naar int int
         private List<KeyValuePair<int, int>> getValues(List<KeyValuePair<string, string>> subValues)
         {
             BeaconsHandler BH = new BeaconsHandler(db);
@@ -148,7 +158,18 @@ namespace IndoorPositioning.Controllers
             }
             return values;
         }
-
+        private partial class TrackerTraining
+        {
+            public TrackerTraining(int ID, Guid SpaceID, string Status)
+            {
+                this.ID = ID;
+                this.SpaceID = SpaceID;
+                this.Status = Status;
+            }
+            public int ID { get; set; }
+            public Guid SpaceID { get; set; }
+            public string Status { get; set; }
+        }
         private partial class TrackerJson
         {
             public int ID { get; set; }

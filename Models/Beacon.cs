@@ -7,8 +7,9 @@ namespace IndoorPositioning.Models
 {
     public class Beacon
     {
-        public int ID { get; set; }
+        public Beacon() { }
         [Required]
+        public int ID { get; set; }
         public string MAC { get; set; }
         public string Type { get; set; }
         //Foreign Key
